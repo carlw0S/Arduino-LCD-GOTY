@@ -5,17 +5,22 @@
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
+
+
+// game variables
+int gameSpeed = 100;
+
+// "sprites"
+char player = 'o', spike = '<', clear = ' ';
+
+// button variables
 const int buttonPin = 13;
+int buttonState = 0, buttonPrevState = 0;
 
-int buttonState = 0;
-int buttonPrevState = 0;
-
-char player = 'o';
-char spike = '<';
-char clear = ' ';
-
-int speed = 100;
+// spike variables
 int spikeColumn = 14, spikeRow = 1, spikeMoveLoad = 0, spikeMoveDelay = 5, spikeState = 1;
+
+
 
 void setup() {
 
@@ -30,11 +35,12 @@ void setup() {
 
 void loop() {
 
-	delay(speed);
+	delay(gameSpeed);
 
 	buttonState = digitalRead(buttonPin);
 
-	if (buttonState == HIGH && buttonPrevState == LOW) {
+	// player position update
+	if (buttonState == HIGH && buttonPrevState == LOW) {		// jump
 
 		lcd.setCursor(1, 1);
 		lcd.print(clear);
@@ -42,7 +48,7 @@ void loop() {
 		lcd.print(player);
 
 	}
-	else if (buttonState == LOW && buttonPrevState == HIGH) {
+	else if (buttonState == LOW && buttonPrevState == HIGH) {	// ground
 
 		lcd.setCursor(1, 0);
 		lcd.print(clear);
@@ -51,6 +57,7 @@ void loop() {
 
 	}
 
+	// spike position update
 	if (spikeMoveLoad++ == spikeMoveDelay && spikeState == 1) {
 		
 		lcd.setCursor(spikeColumn, spikeRow);
@@ -61,11 +68,11 @@ void loop() {
 			lcd.print(spike);
 
 		}
-		else
+		else		// when the spike reaches the left edge, it is disabled
 			spikeState = 0;
 			
 		spikeMoveLoad = 0;
 	}
 
-	buttonPrevState = buttonState;
+	buttonPrevState = buttonState;		// needed in order to avoid unnecessary player position updates
 }
