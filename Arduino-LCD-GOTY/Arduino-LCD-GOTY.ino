@@ -8,6 +8,8 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, in
 
 bool spikeCollision(int spikeColumn, int spikeRow, int playerRow);
 
+void spikeSpawn(int *spikeColumn, int *spikeRow, int *spikeState);
+
 
 
 // initialize the library by associating any needed LCD interface pin
@@ -31,7 +33,7 @@ int buttonState = 0, buttonPrevState = 0;
 int playerColumn = 1, playerRow = 1;
 
 // spike variables
-int spikeColumn = 14, spikeRow = 1, spikeMovementCounter = 0, spikeMovementDelay = 20, spikeState = 1;
+int spikeColumn = 17, spikeRow = 1, spikeMovementCounter = 0, spikeMovementDelay = 20, spikeState = 1;
 
 
 
@@ -62,6 +64,8 @@ void loop() {
 	// spike collision detection
 	if (spikeCollision(spikeColumn, spikeRow, playerRow))
 		delay(3000);
+
+	spikeSpawn(&spikeColumn, &spikeRow, &spikeState);
 
 	buttonPrevState = buttonState;		// needed in order to avoid unnecessary player position updates
 }
@@ -123,4 +127,15 @@ bool spikeCollision(int spikeColumn, int spikeRow, int playerRow){
 		collision = true;
 
 	return collision;
+}
+
+
+
+void spikeSpawn(int *spikeColumn, int *spikeRow, int *spikeState){
+
+	if ((*spikeState) == 0 && random(10) == 0){
+		(*spikeState) = 1;
+		(*spikeColumn) = 17;
+		(*spikeRow) = random(2);
+	}
 }
