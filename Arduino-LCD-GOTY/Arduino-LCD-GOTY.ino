@@ -2,13 +2,13 @@
 
 
 
-void gameOver(int *score);
+void gameOver();
 
-void playerMovement(int playerColumn, int *playerRow);
+void playerMovement();
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState, int *score);
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState);
 
-bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState, int playerRow);
+bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState);
 
 void spikeSpawn(int *spikeColumn, int *spikeRow, int *spikeState);
 
@@ -58,14 +58,14 @@ void loop() {
 	delay(gameSpeed);
 
 	// player position update
-	playerMovement(playerColumn, &playerRow);
+	playerMovement();
 
 	// spike position update
-	spikeMovement(&spikeColumn, spikeRow, &spikeMovementCounter, spikeMovementDelay, &spikeState, &score);
+	spikeMovement(&spikeColumn, spikeRow, &spikeMovementCounter, spikeMovementDelay, &spikeState);
 
 	// spike collision detection
-	if (spikeCollision(&spikeColumn, spikeRow, &spikeState, playerRow))
-		gameOver(&score);
+	if (spikeCollision(&spikeColumn, spikeRow, &spikeState))
+		gameOver();
 
 	spikeSpawn(&spikeColumn, &spikeRow, &spikeState);
 
@@ -75,12 +75,12 @@ void loop() {
 
 
 
-void gameOver(int *score){
+void gameOver(){
 
 	int retry = 0;
 	char buffer[17];
 
-	sprintf(buffer, "Score: %i", (*score));
+	sprintf(buffer, "Score: %i", score);
 
 	lcd.clear();
 	lcd.setCursor(0,0);
@@ -98,32 +98,32 @@ void gameOver(int *score){
 
 	}while (retry == 0);
 
-	(*score) = 0;
+	score = 0;
 	lcd.clear();
 	lcd.setCursor(1, 1);
 	lcd.print(player);
 
 }
 
-void playerMovement(int playerColumn, int *playerRow){
+void playerMovement(){
 
 	buttonState = digitalRead(buttonPin);
 
 	if (BUTTON_HOLD) {		// jump
 
-		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.setCursor(playerColumn, playerRow);
 		lcd.print(clear);
-		(*playerRow) = 0;
-		lcd.setCursor(playerColumn, (*playerRow));
+		playerRow = 0;
+		lcd.setCursor(playerColumn, playerRow);
 		lcd.print(player);
 
 	}
 	else if (BUTTON_RELEASE) {	// fall
 
-		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.setCursor(playerColumn, playerRow);
 		lcd.print(clear);
-		(*playerRow) = 1;
-		lcd.setCursor(playerColumn, (*playerRow));
+		playerRow = 1;
+		lcd.setCursor(playerColumn, playerRow);
 		lcd.print(player);
 
 	}
@@ -134,7 +134,7 @@ void playerMovement(int playerColumn, int *playerRow){
 
 
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState, int *score){
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState){
 
 	if ((*spikeState) == 1 && (*spikeMovementCounter)++ == spikeMovementDelay) {		// the spike moves when its internal counter reaches a certain amount
 		
@@ -148,7 +148,7 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, in
 		}
 		else {		// when the spike reaches the left edge, it is disabled and 10 points are added to the score
 			(*spikeState) = 0;
-			(*score) += 10;
+			score += 10;
 		}
 			
 		(*spikeMovementCounter) = 0;
@@ -159,7 +159,7 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, in
 
 
 
-bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState, int playerRow){
+bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState){
 
 	bool collision = false;
 
