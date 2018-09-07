@@ -1,8 +1,13 @@
 #include <LiquidCrystal.h>
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMoveLoad, int spikeMoveDelay, int *spikeState);
+
+
+void playerMovement(int buttonState, int buttonPrevState, int playerColumn, int *playerRow);
+
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState);
 
 bool spikeCollision(int spikeColumn, int spikeRow, int playerRow);
+
 
 
 // initialize the library by associating any needed LCD interface pin
@@ -26,7 +31,9 @@ int buttonState = 0, buttonPrevState = 0;
 int playerColumn = 1, playerRow = 1;
 
 // spike variables
-int spikeColumn = 14, spikeRow = 1, spikeMoveLoad = 0, spikeMoveDelay = 20, spikeState = 1;
+int spikeColumn = 14, spikeRow = 1, spikeMovementCounter = 0, spikeMovementDelay = 20, spikeState = 1;
+
+
 
 
 
@@ -47,46 +54,53 @@ void loop() {
 	buttonState = digitalRead(buttonPin);
 
 	// player position update
-	if (buttonState == HIGH && buttonPrevState == LOW) {		// jump
-
-		lcd.setCursor(playerColumn, playerRow);
-		lcd.print(clear);
-		playerRow = 0;
-		lcd.setCursor(playerColumn, playerRow);
-		lcd.print(player);
-
-	}
-	else if (buttonState == LOW && buttonPrevState == HIGH) {	// ground
-
-		lcd.setCursor(playerColumn, playerRow);
-		lcd.print(clear);
-		playerRow = 1;
-		lcd.setCursor(playerColumn, playerRow);
-		lcd.print(player);
-
-	}
+	playerMovement(buttonState, buttonPrevState, playerColumn, &playerRow);
 
 	// spike position update
-	spikeMovement(&spikeColumn, spikeRow, &spikeMoveLoad, spikeMoveDelay, &spikeState);
+	spikeMovement(&spikeColumn, spikeRow, &spikeMovementCounter, spikeMovementDelay, &spikeState);
 
 	// spike collision detection
 	if (spikeCollision(spikeColumn, spikeRow, playerRow))
 		delay(3000);
-
-
 
 	buttonPrevState = buttonState;		// needed in order to avoid unnecessary player position updates
 }
 
 
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMoveLoad, int spikeMoveDelay, int *spikeState){
 
-	if ((*spikeMoveLoad)++ == spikeMoveDelay && (*spikeState) == 1) {
+
+void playerMovement(int buttonState, int buttonPrevState, int playerColumn, int *playerRow){
+
+	if (buttonState == HIGH && buttonPrevState == LOW) {		// jump
+
+		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.print(clear);
+		(*playerRow) = 0;
+		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.print(player);
+
+	}
+	else if (buttonState == LOW && buttonPrevState == HIGH) {	// fall
+
+		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.print(clear);
+		(*playerRow) = 1;
+		lcd.setCursor(playerColumn, (*playerRow));
+		lcd.print(player);
+
+	}
+}
+
+
+
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState){
+
+	if ((*spikeMovementCounter)++ == spikeMovementDelay && (*spikeState) == 1) {		// the spike moves when its internal counter reaches a certain amount
 		
 		lcd.setCursor((*spikeColumn), spikeRow);
 		lcd.print(clear);
-		if ((*spikeColumn) != 0){
+		if ((*spikeColumn) != 0){		// the spike hasn't reached the left edge yet
 
 			lcd.setCursor(--(*spikeColumn), spikeRow);
 			lcd.print(spike);
@@ -95,7 +109,7 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMoveLoad, int spike
 		else		// when the spike reaches the left edge, it is disabled
 			(*spikeState) = 0;
 			
-		(*spikeMoveLoad) = 0;
+		(*spikeMovementCounter) = 0;
 	}
 }
 
