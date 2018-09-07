@@ -6,7 +6,7 @@ void gameOver();
 
 void playerMovement();
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState);
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int *spikeState);
 
 bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState);
 
@@ -61,7 +61,7 @@ void loop() {
 	playerMovement();
 
 	// spike position update
-	spikeMovement(&spikeColumn, spikeRow, &spikeMovementCounter, spikeMovementDelay, &spikeState);
+	spikeMovement(&spikeColumn, spikeRow, &spikeMovementCounter, &spikeState);
 
 	// spike collision detection
 	if (spikeCollision(&spikeColumn, spikeRow, &spikeState))
@@ -134,7 +134,7 @@ void playerMovement(){
 
 
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int spikeMovementDelay, int *spikeState){
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeMovementCounter, int *spikeState){
 
 	if ((*spikeState) == 1 && (*spikeMovementCounter)++ == spikeMovementDelay) {		// the spike moves when its internal counter reaches a certain amount
 		
