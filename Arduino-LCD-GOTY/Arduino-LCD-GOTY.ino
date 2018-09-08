@@ -31,7 +31,7 @@ char player = 'o', spike = '<', clear = ' ';
 // button variables and macros
 const int buttonPin = 13;
 int buttonState = 0, buttonPrevState = 1;
-#define BUTTON_HOLD buttonPrevState == LOW && buttonState == HIGH
+#define BUTTON_PRESS buttonPrevState == LOW && buttonState == HIGH
 #define BUTTON_RELEASE buttonPrevState == HIGH && buttonState == LOW
 
 // player variables
@@ -92,7 +92,7 @@ void gameOver(){
 
 		delay(gameSpeed);
 		buttonState = digitalRead(buttonPin);
-		if (BUTTON_HOLD)
+		if (BUTTON_PRESS)
 			retry = 1;
 		buttonPrevState = buttonState;
 
@@ -109,7 +109,7 @@ void playerMovement(){
 
 	buttonState = digitalRead(buttonPin);
 
-	if (BUTTON_HOLD) {		// jump
+	if (BUTTON_PRESS) {		// jump
 
 		lcd.setCursor(playerColumn, playerRow);
 		lcd.print(clear);
