@@ -6,7 +6,7 @@ void gameOver();
 
 void playerMovement();
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeUpdateCounter, int *spikeState);
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeState);
 
 bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState);
 
@@ -27,7 +27,7 @@ int score = 0;
 int objectUpdateCounter = 0, objectUpdateDelay = 8;
 
 // "sprites"
-char player = 'o', spike = '<', clear = ' ';
+char player = 'o', spike = '<', clear = ' ', coin = '·';
 
 // button variables and macros
 const int buttonPin = 13;
@@ -40,10 +40,12 @@ int playerColumn = 1, playerRow = 1;
 
 // spike variables
 int spikeSpawned = 16, spikeMinDistance = 4;	// these variables assure that two spikes don't spawn too close to each other; each time a spike appears, spikeSpawned resets to 0, and increases with each object update; when it reaches spikeMinDistance, a new spike can spawn
-int spikeColumn, spikeRow, spikeUpdateCounter = 0, spikeState = 0;
-int spikeColumn2, spikeRow2, spikeUpdateCounter2 = 0, spikeState2 = 0;
-int spikeColumn3, spikeRow3, spikeUpdateCounter3 = 0, spikeState3 = 0;
+int spikeColumn, spikeRow, spikeState = 0;
+int spike2Column, spike2Row, spike2State = 0;
+int spike3Column, spike3Row, spike3State = 0;
 
+// coin variables
+int coinColumn, coinRow, coinState = 0;
 
 
 
@@ -71,20 +73,20 @@ void loop() {
 		objectUpdateCounter = 0;
 
 		// spike position update
-		spikeMovement(&spikeColumn, spikeRow, &spikeUpdateCounter, &spikeState);
-		spikeMovement(&spikeColumn2, spikeRow2, &spikeUpdateCounter2, &spikeState2);
-		spikeMovement(&spikeColumn3, spikeRow3, &spikeUpdateCounter3, &spikeState3);
+		spikeMovement(&spikeColumn, spikeRow, &spikeState);
+		spikeMovement(&spike2Column, spike2Row, &spike2State);
+		spikeMovement(&spike3Column, spike3Row, &spike3State);
 		spikeSpawned++;
 
 		// object spawning
 		spikeSpawn(&spikeColumn, &spikeRow, &spikeState);
-		spikeSpawn(&spikeColumn2, &spikeRow2, &spikeState2);
-		spikeSpawn(&spikeColumn3, &spikeRow3, &spikeState3);
+		spikeSpawn(&spike2Column, &spike2Row, &spike2State);
+		spikeSpawn(&spike3Column, &spike3Row, &spike3State);
 
 	}
 
 	// spike collision detection
-	if (spikeCollision(&spikeColumn, spikeRow, &spikeState) || spikeCollision(&spikeColumn2, spikeRow2, &spikeState2) || spikeCollision(&spikeColumn3, spikeRow3, &spikeState3))
+	if (spikeCollision(&spikeColumn, spikeRow, &spikeState) || spikeCollision(&spike2Column, spike2Row, &spike2State) || spikeCollision(&spike3Column, spike3Row, &spike3State))
 		gameOver();
 
 }
@@ -101,7 +103,7 @@ void gameOver(){
 
 
 	spikeState = 0;
-	spikeState2 = 0;
+	spike2State = 0;
 	spikeSpawned = 16;
 
 
@@ -160,7 +162,7 @@ void playerMovement(){
 
 
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeUpdateCounter, int *spikeState){
+void spikeMovement(int *spikeColumn, int spikeRow, int *spikeState){
 
 	if ((*spikeState) == 1) {		// the spike moves when it's enabled
 		
@@ -176,8 +178,6 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeUpdateCounter, int 
 			(*spikeState) = 0;
 			score += 10;
 		}
-			
-		(*spikeUpdateCounter) = 0;
 
 	}
 
