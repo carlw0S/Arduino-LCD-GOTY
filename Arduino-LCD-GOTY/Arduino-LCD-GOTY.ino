@@ -42,6 +42,7 @@ int playerColumn = 1, playerRow = 1;
 int spikeSpawned = 16, spikeMinDistance = 4;	// these variables assure that two spikes don't spawn too close to each other; each time a spike appears, spikeSpawned resets to 0, and increases with each object update; when it reaches spikeMinDistance, a new spike can spawn
 int spikeColumn, spikeRow, spikeUpdateCounter = 0, spikeState = 0;
 int spikeColumn2, spikeRow2, spikeUpdateCounter2 = 0, spikeState2 = 0;
+int spikeColumn3, spikeRow3, spikeUpdateCounter3 = 0, spikeState3 = 0;
 
 
 
@@ -72,17 +73,19 @@ void loop() {
 		// spike position update
 		spikeMovement(&spikeColumn, spikeRow, &spikeUpdateCounter, &spikeState);
 		spikeMovement(&spikeColumn2, spikeRow2, &spikeUpdateCounter2, &spikeState2);
+		spikeMovement(&spikeColumn3, spikeRow3, &spikeUpdateCounter3, &spikeState3);
 		spikeSpawned++;
-
-		// spike collision detection
-		if (spikeCollision(&spikeColumn, spikeRow, &spikeState) || spikeCollision(&spikeColumn2, spikeRow2, &spikeState2))
-			gameOver();
 
 		// object spawning
 		spikeSpawn(&spikeColumn, &spikeRow, &spikeState);
 		spikeSpawn(&spikeColumn2, &spikeRow2, &spikeState2);
+		spikeSpawn(&spikeColumn3, &spikeRow3, &spikeState3);
 
 	}
+
+	// spike collision detection
+	if (spikeCollision(&spikeColumn, spikeRow, &spikeState) || spikeCollision(&spikeColumn2, spikeRow2, &spikeState2) || spikeCollision(&spikeColumn3, spikeRow3, &spikeState3))
+		gameOver();
 
 }
 
