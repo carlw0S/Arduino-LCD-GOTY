@@ -2,15 +2,12 @@
 
 
 
+// functions
 void gameOver();
-
 void playerMovement();
-
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeState);
-
-bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState);
-
-void spikeSpawn(int *spikeColumn, int *spikeRow, int *spikeState);
+void objectMovement(int *objectColumn, int objectRow, int *objectState, int objectID);
+bool objectCollision(int *objectColumn, int objectRow, int *objectState);
+void objectSpawn(int *objectColumn, int *objectRow, int *objectState, int objectID);
 
 
 
@@ -21,13 +18,13 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
 
+// "sprites"
+const char player = 'o', spike = '<', clear = ' ', coin = '*';
+
 // game variables
 float gameSpeed = 16.6666667;	// 60 fps??? i have no idea lmao
 int score = 0;
 int objectUpdateCounter = 0, objectUpdateDelay = 8;
-
-// "sprites"
-char player = 'o', spike = '<', clear = ' ', coin = '·';
 
 // button variables and macros
 const int buttonPin = 13;
@@ -36,15 +33,19 @@ int buttonState = 0, buttonPrevState = 1;
 #define BUTTON_RELEASE buttonPrevState == HIGH && buttonState == LOW
 
 // player variables
+const int playerID = 0;
 int playerColumn = 1, playerRow = 1;
 
 // spike variables
-int spikeSpawned = 16, spikeMinDistance = 4;	// these variables assure that two spikes don't spawn too close to each other; each time a spike appears, spikeSpawned resets to 0, and increases with each object update; when it reaches spikeMinDistance, a new spike can spawn
+const int spikeID = 1;
+int spikeDistance = 16, spikeMinDistance = 4;	// needed not to spawn objects too close to each other; see objectSpawn() for more info
 int spikeColumn, spikeRow, spikeState = 0;
 int spike2Column, spike2Row, spike2State = 0;
 int spike3Column, spike3Row, spike3State = 0;
 
 // coin variables
+const int coinID = 2;
+int coinDistance = 16, coinMinDistance = 2;		// needed not to spawn objects too close to each other; see objectSpawn() for more info
 int coinColumn, coinRow, coinState = 0;
 
 
@@ -72,22 +73,34 @@ void loop() {
 
 		objectUpdateCounter = 0;
 
-		// spike position update
-		spikeMovement(&spikeColumn, spikeRow, &spikeState);
-		spikeMovement(&spike2Column, spike2Row, &spike2State);
-		spikeMovement(&spike3Column, spike3Row, &spike3State);
-		spikeSpawned++;
+		// object position update
+		objectMovement(&spikeColumn, spikeRow, &spikeState, spikeID);
+		objectMovement(&spike2Column, spike2Row, &spike2State, spikeID);
+		objectMovement(&spike3Column, spike3Row, &spike3State, spikeID);
+		objectMovement(&coinColumn, coinRow, &coinState, coinID);
+		spikeDistance++;
+		coinDistance++;
 
 		// object spawning
-		spikeSpawn(&spikeColumn, &spikeRow, &spikeState);
-		spikeSpawn(&spike2Column, &spike2Row, &spike2State);
-		spikeSpawn(&spike3Column, &spike3Row, &spike3State);
+		objectSpawn(&spikeColumn, &spikeRow, &spikeState, spikeID);
+		objectSpawn(&spike2Column, &spike2Row, &spike2State, spikeID);
+		objectSpawn(&spike3Column, &spike3Row, &spike3State, spikeID);
+		objectSpawn(&coinColumn, &coinRow, &coinState, coinID);
 
 	}
 
-	// spike collision detection
-	if (spikeCollision(&spikeColumn, spikeRow, &spikeState) || spikeCollision(&spike2Column, spike2Row, &spike2State) || spikeCollision(&spike3Column, spike3Row, &spike3State))
+	// object collision detection
+	if (objectCollision(&spikeColumn, spikeRow, &spikeState) || objectCollision(&spike2Column, spike2Row, &spike2State) || objectCollision(&spike3Column, spike3Row, &spike3State))
+
 		gameOver();
+
+	else if (objectCollision(&coinColumn, coinRow, &coinState)){
+
+		lcd.setCursor(playerColumn, playerRow);
+		lcd.print(player);
+		score+=100;
+
+	}
 
 }
 
@@ -101,13 +114,16 @@ void gameOver(){
 	char buffer[17];
 
 
-
+	// variable reset
 	spikeState = 0;
 	spike2State = 0;
-	spikeSpawned = 16;
+	spike3State = 0;
+	coinState = 0;
+	spikeDistance = 16;
+	coinDistance = 16;
 
 
-
+	// convert score into a string in order to display it in the LCD
 	sprintf(buffer, "Score: %i", score);
 
 	lcd.clear();
@@ -116,7 +132,7 @@ void gameOver(){
 	lcd.setCursor(0,1);
 	lcd.print(buffer);
 
-	do{
+	do{		// press the button to retry
 
 		delay(gameSpeed);
 		buttonState = digitalRead(buttonPin);
@@ -126,12 +142,16 @@ void gameOver(){
 
 	}while (retry == 0);
 
+
+	// last things to reset
 	score = 0;
 	lcd.clear();
 	lcd.setCursor(1, 1);
 	lcd.print(player);
 
 }
+
+
 
 void playerMovement(){
 
@@ -162,21 +182,29 @@ void playerMovement(){
 
 
 
-void spikeMovement(int *spikeColumn, int spikeRow, int *spikeState){
+void objectMovement(int *objectColumn, int objectRow, int *objectState, int objectID){
 
-	if ((*spikeState) == 1) {		// the spike moves when it's enabled
+	char sprite;
+
+	switch(objectID){
+		case spikeID: sprite = spike; break;
+		case coinID: sprite = coin; break;
+	}
+
+	if ((*objectState) == 1) {		// the object moves when it's enabled
 		
-		lcd.setCursor((*spikeColumn), spikeRow);
+		lcd.setCursor((*objectColumn), objectRow);
 		lcd.print(clear);
-		if ((*spikeColumn) != 0){		// the spike hasn't reached the left edge yet
+		if ((*objectColumn) != 0){		// the object hasn't reached the left edge yet
 
-			lcd.setCursor(--(*spikeColumn), spikeRow);
-			lcd.print(spike);
+			lcd.setCursor(--(*objectColumn), objectRow);
+			lcd.print(sprite);
 
 		}
-		else {		// when the spike reaches the left edge, it is disabled and 10 points are added to the score
-			(*spikeState) = 0;
-			score += 10;
+		else {		// when the object reaches the left edge, it is disabled and 10 points are added to the score if it was a spike
+			(*objectState) = 0;
+			if (objectID == spikeID)
+				score += 10;
 		}
 
 	}
@@ -185,15 +213,15 @@ void spikeMovement(int *spikeColumn, int spikeRow, int *spikeState){
 
 
 
-bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState){
+bool objectCollision(int *objectColumn, int objectRow, int *objectState){
 
 	bool collision = false;
 
-	if ((*spikeColumn) == 1 && spikeRow == playerRow){
+	if ((*objectColumn) == 1 && objectRow == playerRow){
 
 		collision = true;
-		(*spikeColumn) = 0;
-		(*spikeState) = 0;
+		(*objectColumn) = 0;
+		(*objectState) = 0;
 
 	}
 
@@ -203,14 +231,23 @@ bool spikeCollision(int *spikeColumn, int spikeRow, int *spikeState){
 
 
 
-void spikeSpawn(int *spikeColumn, int *spikeRow, int *spikeState){
+void objectSpawn(int *objectColumn, int *objectRow, int *objectState, int objectID){
 
-	if (spikeSpawned >= spikeMinDistance && (*spikeState) == 0 && random(10) == 0){		// the spike has a 1/10 chance to appear
+	if ( (*objectState) == 0 && random(10) == 0){		// the object has a 1/10 chance to appear and it has to be disabled
 
-		(*spikeState) = 1;
-		(*spikeColumn) = 16;
-		(*spikeRow) = random(2);		// the row is random too
-		spikeSpawned = 0;
+		// the following 'if' controls the distance between objects
+		if ( (objectID == spikeID && spikeDistance >= spikeMinDistance && coinDistance >= coinMinDistance) || (objectID == coinID && spikeDistance >= coinMinDistance && coinDistance >= coinMinDistance) ){
+
+			(*objectState) = 1;
+			(*objectColumn) = 16;
+			(*objectRow) = random(2);		// the row is random too
+			
+			switch(objectID){
+				case spikeID: spikeDistance = 0; break;
+				case coinID: coinDistance = 0; break;
+			}
+
+		}
 
 	}
 
